@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento Aprovado</title>
+    <!-- Adicione os links para os arquivos Bootstrap CSS aqui -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Orçamento Aprovado</h1>
+        <h2>Itens do Orçamento</h2>
+        <ul id="listaItens" class="list-group">
+            <!-- Os itens do orçamento serão exibidos aqui -->
+        </ul>
+        <p>Total: R$ <span id="total"></span></p>
+        <a href="index.html" class="btn btn-primary">Voltar para a Página Inicial</a>
+    </div>
+
+    <!-- Adicione os links para os arquivos Bootstrap JS e jQuery aqui se necessário -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script> -->
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+    
+    <!-- Script JavaScript para carregar o orçamento e exibir na página -->
+    <script>
+        // Recupere os dados do orçamento da sessão de armazenamento local
+        const orcamento = JSON.parse(localStorage.getItem('orcamento'));
+        if (orcamento) {
+            exibirOrcamento(orcamento);
+        } else {
+            // Caso o orçamento não esteja disponível, redirecione de volta para a página inicial
+            window.location.href = 'index.html';
+        }
+
+        function exibirOrcamento(orcamento) {
+            const listaItens = document.getElementById('listaItens');
+            const totalElement = document.getElementById('total');
+
+            // Limpe o conteúdo existente
+            listaItens.innerHTML = '';
+            totalElement.textContent = '';
+
+            // Exiba os itens do orçamento
+            orcamento.items.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+                listItem.innerHTML = `
+                    <strong>Mármore:</strong> ${item.tipoMarmore}, <strong>Cor:</strong> ${item.corMarmore}, 
+                    <strong>Tipo:</strong> ${item.tipoProduto}, <strong>Altura:</strong> ${item.altura} m, 
+                    <strong>Comprimento:</strong> ${item.comprimento} m, <strong>Área:</strong> ${item.area} m², 
+                    <strong>Valor:</strong> R$ ${item.valorTotal.toFixed(2)}
+                `;
+                listaItens.appendChild(listItem);
+            });
+
+            // Exiba o valor total
+            totalElement.textContent = orcamento.total.toFixed(2);
+        }
+    </script>
+</body>
+</html>

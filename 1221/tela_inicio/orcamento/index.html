@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento de Mármores</title>
+    <!-- Adicione os links para os arquivos Bootstrap CSS e JavaScript aqui -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Orçamento de Mármores</h1>
+        <form id="orcamentoForm">
+            <div class="form-group">
+                <label for="tipoMarmore">Tipo de Mármore:</label>
+                <select class="form-control" id="tipoMarmore">
+                    <option value="granito">Granito</option>
+                    <option value="marmore">Mármore</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="corMarmore">Cor do Mármore:</label>
+                <select class="form-control" id="corMarmore">
+                    <option value="branco">Branco</option>
+                    <option value="preto">Preto</option>
+                    <option value="verde">Verde</option>
+                    <option value="bege">Bege</option>
+                    <!-- Adicione mais opções de cores aqui -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tipoProduto">Tipo de Produto:</label>
+                <select class="form-control" id="tipoProduto">
+                    <option value="soleira">Soleira</option>
+                    <option value="pingadeira">Pingadeira</option>
+                    <option value="balcao">Balcão</option>
+                    <option value="outro">Outro</option>
+                </select>
+            </div>
+            <div class="form-group" id="campoTipoOutro" style="display: none;">
+                <label for="tipoOutro">Outro Tipo:</label>
+                <input type="text" class="form-control" id="tipoOutro" placeholder="Digite o tipo">
+            </div>
+            <div class="form-group">
+                <label for="complrimento">Comprimento (m):</label>
+                <input type="number" class="form-control" id="altura" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="largura">Largura (m):</label>
+                <input type="number" class="form-control" id="comprimento" step="0.01">
+            </div>
+            <button type="button" class="btn btn-primary" id="adicionarItem">Adicionar Item</button>
+            <button type="button" class="btn btn-success" id="finalizarOrcamento">Finalizar Orçamento</button>
+        </form>
+        <hr>
+        <h2>Itens do Orçamento</h2>
+        <ul id="listaItens" class="list-group">
+            <!-- Os itens adicionados serão exibidos aqui -->
+        </ul>
+        <p>Total: R$ <span id="total"></span></p>
+    </div>
+
+    <!-- Adicione os links para os arquivos Bootstrap JS e jQuery aqui -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Script JavaScript para adicionar itens ao orçamento e calcular o total -->
+    <script>
+        $(document).ready(function () {
+            let items = [];
+            
+            $('#tipoProduto').change(function () {
+                const selectedTipo = $(this).val();
+                if (selectedTipo === 'outro') {
+                    $('#campoTipoOutro').show();
+                } else {
+                    $('#campoTipoOutro').hide();
+                }
+            });
+            
+            $('#adicionarItem').click(function () {
+                const tipoMarmore = $('#tipoMarmore').val();
+                let tipoProduto = $('#tipoProduto').val();
+                if (tipoProduto === 'outro') {
+                    tipoProduto = $('#tipoOutro').val();
+                }
+                const corMarmore = $('#corMarmore').val();
+                
+                const altura = parseFloat($('#altura').val());
+                const comprimento = parseFloat($('#comprimento').val());
+                const area = altura * comprimento; // Calcula a área em m²
+                const valorMetroQuadrado = calcularValorMetroQuadrado(tipoProduto);
+                const valorTotal = area * valorMetroQuadrado;
+                
+                if (!isNaN(valorTotal) && valorTotal > 0) {
+                    items.push({ tipoMarmore, corMarmore, tipoProduto, altura, comprimento, area, valorTotal });
+                    atualizarListaItens();
+                    calcularTotal();
+                }
+            });
+            
+            $('#finalizarOrcamento').click(function () {
+                // Salve o orçamento na sessão de armazenamento local
+                const orcamento = { items, total: calcularTotal() };
+                localStorage.setItem('orcamento', JSON.stringify(orcamento));
+
+                // Redirecione o usuário para a página de orçamento aprovado
+                window.location.href = 'orcamento.html';
+            });
+            
+            function calcularValorMetroQuadrado(tipoProduto) {
+                // Defina os valores do metro quadrado para cada tipo de produto aqui
+                // Exemplo: soleira = 100, pingadeira = 120, balcao = 150
+                switch (tipoProduto) {
+                    case 'soleira':
+                        return 100;
+                    case 'pingadeira':
+                        return 120;
+                    case 'balcao':
+                        return 150;
+                    default:
+                        return 0;
+                }
+            }
+            
+            function atualizarListaItens() {
+                const listaItens = $('#listaItens');
+                listaItens.empty();
+                
+                items.forEach((item, index) => {
+                    listaItens.append(`<li class="list-group-item">Pedra: ${item.tipoMarmore} - Cor: ${item.corMarmore} - Tipo: ${item.tipoProduto} - Comprimento: ${item.altura} m - Largura: ${item.comprimento} m - Área: ${item.area} m² - R$ ${item.valorTotal.toFixed(2)} <button class="btn btn-danger btn-sm float-right" onclick="removerItem(${index})">Remover</button></li>`);
+                });
+            }
+            
+            function calcularTotal() {
+                const total = items.reduce((acc, item) => acc + item.valorTotal, 0);
+                $('#total').text(total.toFixed(2));
+            }
+            
+            function removerItem(index) {
+                items.splice(index, 1);
+                atualizarListaItens();
+                calcularTotal();
+            }
+        });
+    </script>
+</body>
+</html>
